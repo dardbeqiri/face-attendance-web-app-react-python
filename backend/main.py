@@ -8,18 +8,22 @@ import time
 import shutil
 
 import cv2
-from fastapi import FastAPI, File, UploadFile, Form, UploadFile, Response
+from fastapi import FastAPI, File, UploadFile, Form, Response
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import face_recognition
 import starlette
 
 
-ATTENDANCE_LOG_DIR = './logs'
-DB_PATH = './db'
+# Define new data directories
+BASE_DATA_DIR = './data'
+ATTENDANCE_LOG_DIR = os.path.join(BASE_DATA_DIR, 'logs')
+DB_PATH = os.path.join(BASE_DATA_DIR, 'db')
+
+# Ensure these directories exist
 for dir_ in [ATTENDANCE_LOG_DIR, DB_PATH]:
     if not os.path.exists(dir_):
-        os.mkdir(dir_)
+        os.makedirs(dir_)
 
 app = FastAPI()
 
@@ -33,14 +37,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.post("/login")
 async def login(file: UploadFile = File(...)):
 
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
-    # example of how you can save the file
+    # Example of how you can save the file
     with open(file.filename, "wb") as f:
         f.write(contents)
 
@@ -49,9 +52,8 @@ async def login(file: UploadFile = File(...)):
     if match_status:
         epoch_time = time.time()
         date = time.strftime('%Y%m%d', time.localtime(epoch_time))
-        with open(os.path.join(ATTENDANCE_LOG_DIR, '{}.csv'.format(date)), 'a') as f:
-            f.write('{},{},{}\n'.format(user_name, datetime.datetime.now(), 'IN'))
-            f.close()
+        with open(os.path.join(ATTENDANCE_LOG_DIR, f'{date}.csv'), 'a') as f:
+            f.write(f'{user_name},{datetime.datetime.now()},IN\n')
 
     return {'user': user_name, 'match_status': match_status}
 
@@ -62,7 +64,7 @@ async def logout(file: UploadFile = File(...)):
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
-    # example of how you can save the file
+    # Example of how you can save the file
     with open(file.filename, "wb") as f:
         f.write(contents)
 
@@ -71,9 +73,8 @@ async def logout(file: UploadFile = File(...)):
     if match_status:
         epoch_time = time.time()
         date = time.strftime('%Y%m%d', time.localtime(epoch_time))
-        with open(os.path.join(ATTENDANCE_LOG_DIR, '{}.csv'.format(date)), 'a') as f:
-            f.write('{},{},{}\n'.format(user_name, datetime.datetime.now(), 'OUT'))
-            f.close()
+        with open(os.path.join(ATTENDANCE_LOG_DIR, f'{date}.csv'), 'a') as f:
+            f.write(f'{user_name},{datetime.datetime.now()},OUT\n')
 
     return {'user': user_name, 'match_status': match_status}
 
@@ -83,16 +84,16 @@ async def register_new_user(file: UploadFile = File(...), text=None):
     file.filename = f"{uuid.uuid4()}.png"
     contents = await file.read()
 
-    # example of how you can save the file
+    # Example of how you can save the file
     with open(file.filename, "wb") as f:
         f.write(contents)
 
-    shutil.copy(file.filename, os.path.join(DB_PATH, '{}.png'.format(text)))
+    shutil.copy(file.filename, os.path.join(DB_PATH, f'{text}.png'))
 
     embeddings = face_recognition.face_encodings(cv2.imread(file.filename))
 
-    file_ = open(os.path.join(DB_PATH, '{}.pickle'.format(text)), 'wb')
-    pickle.dump(embeddings, file_)
+    with open(os.path.join(DB_PATH, f'{text}.pickle'), 'wb') as file_:
+        pickle.dump(embeddings, file_)
     print(file.filename, text)
 
     os.remove(file.filename)
@@ -107,12 +108,11 @@ async def get_attendance_logs():
 
     shutil.make_archive(filename[:-4], 'zip', ATTENDANCE_LOG_DIR)
 
-    ##return File(filename, filename=filename, content_type="application/zip", as_attachment=True)
-    return starlette.responses.FileResponse(filename, media_type='application/zip',filename=filename)
+    return starlette.responses.FileResponse(filename, media_type='application/zip', filename=filename)
 
 
 def recognize(img):
-    # it is assumed there will be at most 1 match in the db
+    # It is assumed there will be at most 1 match in the db
 
     embeddings_unknown = face_recognition.face_encodings(img)
     if len(embeddings_unknown) == 0:
@@ -124,14 +124,13 @@ def recognize(img):
     j = 0
 
     db_dir = sorted([j for j in os.listdir(DB_PATH) if j.endswith('.pickle')])
-    # db_dir = sorted(os.listdir(DB_PATH))    
     print(db_dir)
-    while ((not match) and (j < len(db_dir))):
+    while not match and j < len(db_dir):
 
         path_ = os.path.join(DB_PATH, db_dir[j])
 
-        file = open(path_, 'rb')
-        embeddings = pickle.load(file)[0]
+        with open(path_, 'rb') as file:
+            embeddings = pickle.load(file)[0]
 
         match = face_recognition.compare_faces([embeddings], embeddings_unknown)[0]
 
@@ -141,5 +140,3 @@ def recognize(img):
         return db_dir[j - 1][:-7], True
     else:
         return 'unknown_person', False
-
-
