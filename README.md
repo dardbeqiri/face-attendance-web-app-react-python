@@ -13,98 +13,55 @@
 
 #### setup server
 
-Log into your AWS account and launch a t2.2xlarge EC2 instance, using the latest stable Ubuntu image.
-
 SSH into the instance and run these commands to update the software repository and install the dependencies.
 
-    sudo apt-get update
-    sudo apt install -y python3-pip nginx
 
-    sudo nano /etc/nginx/sites-enabled/fastapi_nginx
-
-And put this config into the file (replace the IP address with your EC2 instance's public IP):
-
-    server {
-        listen 80;   
-        server_name <YOUR_EC2_IP>;    
-        location / {        
-            proxy_pass http://127.0.0.1:8000;    
-        }
-    }
-
-    sudo service nginx restart
-    
- Update EC2 security-group settings for your instance to allow HTTP traffic to port 80.
-    
- #### Launch API endpoints
+       
+ #### Launch API endpoints (BACKEND)
  
  Clone repository.
- 
-    git clone https://github.com/computervisiondeveloper/face-attendance-web-app-react-python.git
+    
+    sudo apt update
+    
+    sudo apt-get install git -y 
+    
+    git clone git@github.com:dardbeqiri/face-attendance-web-app-react-python.git
    
     cd face-attendance-web-app-react-python
     
 Install Python 3.8, create a virtual environment and install requirements.
 
-    sudo apt update
-
     sudo apt install software-properties-common
 
     sudo add-apt-repository ppa:deadsnakes/ppa
 
-    sudo apt install python3.8
-
-    sudo apt install python3.8-dev
-
-    sudo apt install python3.8-distutils
-
-    sudo apt install python3-virtualenv
+    sudo apt install python3.8 python3.8-dev python3.8-distutils python3-virtualenv -y
     
     cd backend
 
     virtualenv venv --python=python3.8
 
     source venv/bin/activate
-    
-    pip install cmake==3.25.0
 
     pip install -r requirements.txt
     
-Launch app.
+Launch app (BACKEND.
 
     python3 -m uvicorn main:app
-    
+
+    you can send that process to background by running  
+
+    python3 -m uvicorn main:app &
     
 ### frontend
 
-You can host the frontend locally (localhost) or on a server. These are instructions in case you decide to do it on a server.
+You can host the frontend locally (localhost) or on a server.
 
 #### setup server
 
 The process is similar as in the previous case.
-  
-Launch a t2.large instance from AWS.
 
-SSH into the instance and run the same commands as in the backend section to install nginx.
-
-The app will be launched in the port 3000, so you need to make a small adjustment in the config file.
-
-    server {
-        listen 80;   
-        server_name <YOUR_EC2_IP>;    
-        location / {        
-            proxy_pass http://127.0.0.1:3000;    
-        }
-    }
-
-
-    sudo service nginx restart
-    
-Update EC2 security-group settings for your instance to allow HTTP traffic to port 80.
- 
-#### Launch App
- 
-    git clone https://github.com/computervisiondeveloper/face-attendance-web-app-react-python.git
+The app will be launched in the port 3000.
    
     cd face-attendance-web-app-react-python
     
@@ -113,9 +70,14 @@ Update EC2 security-group settings for your instance to allow HTTP traffic to po
     sudo apt-get install npm
     
     npm install
-    
+#### Launch App 
+
     npm start
 
-Edit the value of __API_BASE_URL__ in src/API.js with the ip of the backend server.
+    you can send that process to background by running 
+
+    npm start &
+
+Edit the value of __API_BASE_URL__ in src/API.js with the ip of the backend server if you decide to have the backend on another server, keep in mind to always keep the http:/ or https:// in the beginning of the address.
 
 You may need to adjust your browser to allow access to your webcam through an unsecure conection from the EC2 ip address. In chrome this setting is adjusted here __chrome://flags/#unsafely-treat-insecure-origin-as-secure__.
