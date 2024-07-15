@@ -9,8 +9,30 @@
 
 ## deployment
 ### Run it on a docker container: 
+# Run it in a Docker
 
+If you want to run it in  **Docker**(Recomended). 
+You will need to installl docker:
 
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+Then create a directory called `data` this is where the face recognition data will be saved and log-in/out data, therefore we need a persistent storage.
+
+To start the docker container, execute: 
+
+    docker run -p 8000:8000 -p 80:3000 -v $(pwd)/data:/face-attendance-web-app-react-python/backend/data dardbeqiri/face-attendance-web-app
+
+This command will download and run the container which is based on ubuntu 22:04 and contains these packages: `software-properties-common,  git, python3.8 python3.8-dev python3.8-distutils python3-virtualenv cmake3.5 npm`
+
+The backend job will be send to background, the Frontend start job "npm start" will stay at foreground to keep the container runing. 
+
+After you execute the docker run command, the app will be availabile on localhost, backend at localhost:8000
+The login/logout and picke data will be stored on the `data` directory you created before starting the docker.
+ te files and folders
+
+Overthese you can create the same container by yourself using the dockerfile on this repository: https://github.com/dardbeqiri/face-attendance-web-app-dockerfile
+
+***OR Run directly without docker***
 
 ### backend
 
@@ -83,3 +105,26 @@ The app will be launched in the port 3000.
 Edit the value of __API_BASE_URL__ in src/API.js with the ip of the backend server if you decide to have the backend on another server, keep in mind to always keep the http:/ or https:// in the beginning of the address.
 
 You may need to adjust your browser to allow access to your webcam through an unsecure conection from the EC2 ip address. In chrome this setting is adjusted here __chrome://flags/#unsafely-treat-insecure-origin-as-secure__.
+
+# Support My Work
+
+Hey there! 👋
+
+I hope you find my projects on GitHub and Docker helpful. Maintaining and developing these projects requires time and effort. If you enjoy using them and would like to support my work, consider making a donation. Your contribution will help me keep the projects alive and continually improve them.
+
+**[Donate via PayPal](https://paypal.me/dardbeqiri)**
+
+Thank you for your support! 🙏
+
+---
+
+**Follow Me:**
+- GitHub: [github.com/dardbeqiri](https://github.com/dardbeqiri)
+- Docker Hub: [hub.docker.com/u/dardbeqiri](https://hub.docker.com/u/dardbeqiri)
+
+---
+
+Feel free to reach out if you have any questions or suggestions.
+
+Best,
+Dard Beqiri
