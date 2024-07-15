@@ -8,6 +8,9 @@
 </p>
 
 ## deployment
+### Run it on a docker container: 
+
+
 
 ### backend
 
@@ -15,9 +18,7 @@
 
 SSH into the instance and run these commands to update the software repository and install the dependencies.
 
-
-       
- #### Launch API endpoints (BACKEND)
+#### Launch API endpoints (BACKEND)
  
  Clone repository.
     
@@ -70,6 +71,7 @@ The app will be launched in the port 3000.
     sudo apt-get install npm
     
     npm install
+
 #### Launch App 
 
     npm start
